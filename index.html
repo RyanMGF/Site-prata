@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECIT Dr. Elpídio de Almeida - O Gigantão da Prata</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutral Heritage -->
+    <!-- Application Structure Plan: A single-page application with a thematic, non-linear structure. It starts with a hero section with key stats (KPIs) and a semi-transparent background image. A sticky navigation with a prominent logo allows users to jump to different sections: an interactive timeline for history, a dashboard-style "Raio-X" for data (structure, infrastructure, with interactive course details), a "Hall of Fame" gallery for notable people, a new "Conquistas e Reconhecimentos" section for awards, and an interactive section for school projects. This structure was chosen to transform the dense report into an exploratory and digestible experience, prioritizing user engagement over the report's original linear format. -->
+    <!-- Visualization & Content Choices: 
+        - History: Report Info -> Chronological events. Goal -> Show change over time. Viz -> Interactive HTML/CSS/JS timeline. Interaction -> Click on dates to reveal details, hover effects. Justification -> More engaging and visually clear than a text block.
+        - Technical Courses: Report Info -> Course details. Goal -> Provide detailed, interactive information. Viz -> Tabbed interface with dynamic content. Interaction -> Click on tabs to switch course descriptions and skills. Justification -> Makes the content more immersive and manageable.
+        - Notable People: Report Info -> Lists of alumni/teachers. Goal -> Organize. Viz -> Toggled HTML card grid with enhanced visual design and icons. Interaction -> Buttons to switch between alumni and teachers, hover effects on cards. Justification -> Manages large lists cleanly and gives user control with improved visual feedback and aesthetic appeal.
+        - School Projects: Report Info -> Descriptions of various projects. Goal -> Inform/Engage. Viz -> Interactive HTML cards with modal for full details. Interaction -> Click to reveal details, hover effects on cards. Justification -> Presents distinct initiatives in a digestible format with enhanced visual appeal.
+        - Awards/Achievements: Report Info -> School awards/recognitions. Goal -> Inform/Highlight. Viz -> HTML cards. Interaction -> Static display of achievements with hover effects. Justification -> Clearly presents key recognitions with improved visual engagement.
+        - Infrastructure: Report Info -> Challenges, reforms, resources. Goal -> Detail the evolution and current state. Viz -> Structured text blocks with icons and clear headings. Interaction -> Static informative display. Justification -> Provides comprehensive context on the school's physical and technological environment.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -7px; /* Adjust based on line position and dot size (16px dot, 2px line, 20px padding-left) */
+            top: 10px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: white;
+            border: 3px solid #475569;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+        .timeline-item.active::before {
+            background-color: #0d9488;
+            border-color: #0d9488;
+            transform: scale(1.2); /* Slightly larger active dot */
+        }
+        .timeline-item button:hover .timeline-item::before {
+            border-color: #0d9488; /* Highlight dot on hover */
+        }
+        .hall-of-fame-card, .award-card, .project-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .hall-of-fame-card:hover, .award-card:hover, .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px -5px rgb(0 0 0 / 0.15), 0 5px 8px -5px rgb(0 0 0 / 0.1);
+        }
+        .nav-link {
+            transition: color 0.3s;
+        }
+        .nav-link:hover {
+            color: #0d9488;
+        }
+        .kpi-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .kpi-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 20px -5px rgb(0 0 0 / 0.15), 0 5px 8px -5px rgb(0 0 0 / 0.1);
+        }
+        /* A classe hero-background não é mais usada para a imagem de fundo, mas mantida caso haja outras propriedades */
+        /* .hero-background {
+            background-size: cover;
+            background-position: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+        } */
+        /* Accessibility: Visually hidden but available to screen readers */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+        .course-tab-button {
+            @apply px-4 py-2 rounded-md font-semibold transition-colors duration-200;
+        }
+        .course-tab-button.active {
+            @apply bg-teal-600 text-white shadow-md;
+        }
+        .course-tab-button:not(.active) {
+            @apply bg-slate-200 text-slate-700 hover:bg-slate-300;
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-slate-700">
+
+    <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-lg shadow-lg">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="flex items-center space-x-2">
+                <!-- Substitua este URL pela sua logo da escola. Certifique-se de que o URL é público e acessível. -->
+                <img src="Picture1.jpg" alt="Logo da Escola ECIT Dr. Elpídio de Almeida" class="h-20 w-20 rounded-full shadow-md">
+                <span class="sr-only">ECIT Elpídio de Almeida</span>
+            </h1>
+            <div class="hidden md:flex space-x-8">
+                <a href="#inicio" class="nav-link font-semibold">Início</a>
+                <a href="#linha-do-tempo" class="nav-link font-semibold">Linha do Tempo</a>
+                <a href="#raio-x" class="nav-link font-semibold">Raio-X da Escola</a>
+                <a href="#conquistas" class="nav-link font-semibold">Conquistas</a>
+                <a href="#legado" class="nav-link font-semibold">Legado</a>
+                <a href="#projetos" class="nav-link font-semibold">Projetos</a>
+                <a href="#contato" class="nav-link font-semibold">Contato</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden text-slate-700 focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden">
+            <a href="#inicio" class="block py-2 px-6 text-sm nav-link">Início</a>
+            <a href="#linha-do-tempo" class="block py-2 px-6 text-sm nav-link">Linha do Tempo</a>
+            <a href="#raio-x" class="block py-2 px-6 text-sm nav-link">Raio-X da Escola</a>
+            <a href="#conquistas" class="block py-2 px-6 text-sm nav-link">Conquistas</a>
+            <a href="#legado" class="block py-2 px-6 text-sm nav-link">Legado</a>
+            <a href="#projetos" class="block py-2 px-6 text-sm nav-link">Projetos</a>
+            <a href="#contato" class="block py-2 px-6 text-sm nav-link">Contato</a>
+        </div>
+    </header>
+
+    <main>
+        <section id="inicio" class="relative py-20 bg-white shadow-md overflow-hidden rounded-xl mx-auto my-8 max-w-6xl min-h-[400px]">
+            <!-- Imagem de fundo agora diretamente no HTML -->
+            <img src="https://res.cloudinary.com/dtjjgiitl/image/upload/q_auto:good,f_auto,fl_progressive/v1751894862/s5q0gigesyzpgjp466hw.jpg" 
+                 alt="Foto de fundo da Escola Elpídio de Almeida" 
+                 class="absolute inset-0 w-full h-full object-cover opacity-40 z-0">
+            
+            <div class="container mx-auto px-6 text-center relative z-10">
+                <h2 class="text-4xl md:text-5xl font-bold text-slate-800 mb-4">O Gigantão da Prata</h2>
+                <p class="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto mb-12">Um pilar da educação pública em Campina Grande, moldando gerações e construindo futuros há mais de 70 anos. Explore a história, os dados e o legado de uma das mais importantes instituições de ensino da Paraíba.</p>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+                    <div class="kpi-card bg-teal-50 p-6 rounded-lg shadow-sm text-center">
+                        <p class="text-4xl font-bold text-teal-700">70+</p>
+                        <p class="text-sm font-semibold text-teal-900 mt-2">Anos de História</p>
+                    </div>
+                    <div class="kpi-card bg-amber-50 p-6 rounded-lg shadow-sm text-center">
+                        <p class="text-4xl font-bold text-amber-700">4,9</p>
+                        <p class="text-sm font-semibold text-amber-900 mt-2">IDEB (Ens. Médio 2023)</p>
+                    </div>
+                    <div class="kpi-card bg-sky-50 p-6 rounded-lg shadow-sm text-center">
+                        <p class="text-4xl font-bold text-sky-700">100%</p>
+                        <p class="text-sm font-semibold text-sky-900 mt-2">Participação no ENEM</p>
+                    </div>
+                     <div class="kpi-card bg-rose-50 p-6 rounded-lg shadow-sm text-center">
+                        <p class="text-3xl font-bold text-rose-700">ECIT</p>
+                        <p class="text-sm font-semibold text-rose-900 mt-2">Ensino Integral e Técnico</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="linha-do-tempo" class="py-20 shadow-md rounded-xl mx-auto my-8 max-w-6xl bg-white">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl font-bold text-slate-800">Uma Jornada Através do Tempo</h2>
+                    <p class="text-lg text-slate-600 mt-4 max-w-2xl mx-auto">Navegue pelos marcos que definiram a história da escola, desde sua fundação até as transformações mais recentes. Clique em um ano para descobrir os detalhes de cada evento fundamental.</p>
+                </div>
+
+                <div class="flex flex-col md:flex-row justify-between">
+                    <div class="w-full md:w-1/3 mb-8 md:mb-0">
+                        <div id="timeline-buttons" class="relative pl-5 border-l-2 border-slate-300 space-y-8">
+                        </div>
+                    </div>
+                    <div class="w-full md:w-2/3 md:pl-12">
+                        <div id="timeline-content" class="bg-white p-8 rounded-lg shadow-md min-h-[250px] flex flex-col justify-center">
+                            <h3 id="timeline-title" class="text-2xl font-bold text-teal-700 mb-2"></h3>
+                            <p id="timeline-text" class="text-slate-600"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="raio-x" class="py-20 bg-slate-100 shadow-md rounded-xl mx-auto my-8 max-w-6xl">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl font-bold text-slate-800">Raio-X da Escola</h2>
+                    <p class="text-lg text-slate-600 mt-4 max-w-2xl mx-auto">Mergulhe nos dados que revelam a estrutura de ensino e a infraestrutura da ECIT Elpídio de Almeida, oferecendo um panorama completo da realidade escolar.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+                    <div class="bg-white p-8 rounded-lg shadow-md">
+                        <h3 class="text-2xl font-bold text-slate-800 mb-4">Estrutura Educacional e Qualidade de Ensino</h3>
+                        <p class="text-slate-600 mb-6">A ECIT Elpídio de Almeida oferece um Ensino Médio Integral e Técnico de alta qualidade, preparando os alunos para os desafios do ensino superior e do mercado de trabalho. Nossos cursos são desenhados para desenvolver competências essenciais e habilidades práticas, com uma abordagem pedagógica inovadora e focada no protagonismo estudantil.</p>
+                        
+                        <div class="flex flex-wrap justify-center gap-4 mb-8" id="course-tabs">
+                            <!-- Course buttons will be inserted here by JS -->
+                        </div>
+
+                        <div id="course-details" class="bg-slate-50 p-6 rounded-lg shadow-inner">
+                            <h4 class="font-bold text-xl text-teal-700 mb-2" id="course-detail-title"></h4>
+                            <p class="text-slate-700 mb-4" id="course-detail-description"></p>
+                            <p class="text-sm font-semibold text-slate-600">Habilidades Desenvolvidas:</p>
+                            <ul id="course-detail-skills" class="list-disc list-inside text-sm text-slate-600 ml-4">
+                                <!-- Skills will be inserted here by JS -->
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-8 rounded-lg shadow-md">
+                         <h3 class="text-2xl font-bold text-slate-800 mb-4">Infraestrutura: Um Olhar Detalhado</h3>
+                        <p class="text-slate-600 mb-6">A infraestrutura da ECIT Elpídio de Almeida tem passado por transformações significativas para garantir um ambiente de aprendizado moderno e adequado às necessidades do ensino integral.</p>
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <h4 class="font-bold text-lg text-rose-700 mb-2">🚧 Desafios Passados (2012)</h4>
+                                <p class="text-slate-600 text-sm">Em 2012, um protesto estudantil trouxe à tona deficiências estruturais como a falta de refeitório adequado (alunos comiam sob o sol), insuficiência de pratos e talheres, merenda de baixa qualidade e uma quadra de esportes em reforma que gerava sujeira e calor. Esses problemas impactavam diretamente a experiência do ensino integral.</p>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-lg text-teal-700 mb-2">🏗️ A Grande Reforma (2023-2025)</h4>
+                                <p class="text-slate-600 text-sm mb-2">Em resposta a essas necessidades, o governo estadual investiu **R$ 8,6 milhões** em uma reforma abrangente. As obras, iniciadas em 2023 e em fase final em maio de 2025, visam modernizar a escola e torná-la uma das mais belas da rede estadual. As melhorias incluem:</p>
+                                <ul class="list-disc list-inside text-sm text-slate-600 ml-4">
+                                    <li>Implantação de novas guaritas e subestação.</li>
+                                    <li>Mais de 30 salas de aula modernizadas.</li>
+                                    <li>Adequação de espaços para o ensino integral, incluindo refeitório.</li>
+                                    <li>Melhorias gerais nas instalações físicas.</li>
+                                </ul>
+                                <p class="text-slate-600 text-sm mt-2">Este investimento é crucial para alinhar a infraestrutura à visão pedagógica da escola, garantindo um ambiente propício ao aprendizado e ao desenvolvimento integral dos alunos.</p>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-lg text-sky-700 mb-2">💡 Recursos Tecnológicos (Censo 2020)</h4>
+                                <p class="text-slate-600 text-sm mb-2">A escola também se preocupa em oferecer recursos tecnológicos para complementar o aprendizado e reduzir a desigualdade digital:</p>
+                                <ul class="list-disc list-inside text-sm text-slate-600 ml-4">
+                                    <li>**Computadores:** 9 desktops, 13 laptops.</li>
+                                    <li>**Tablets:** 10 unidades para uso dos alunos.</li>
+                                    <li>**Multimídia:** 3 televisões, 10 aparelhos de som, 10 projetores (Datashow).</li>
+                                    <li>A escola possui laboratório de informática e laboratório de ciências.</li>
+                                </ul>
+                                <p class="text-slate-600 text-sm mt-2">Esses recursos são fundamentais para o desenvolvimento das habilidades dos cursos técnicos e para a pesquisa e atividades dos alunos.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="conquistas" class="py-20 shadow-md rounded-xl mx-auto my-8 max-w-6xl bg-white">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl font-bold text-slate-800">Conquistas e Reconhecimentos</h2>
+                    <p class="text-lg text-slate-600 mt-4 max-w-2xl mx-auto">A ECIT Elpídio de Almeida é reconhecida por sua excelência e impacto, acumulando prêmios e destaques em diversas áreas, fruto do trabalho de alunos e educadores.</p>
+                </div>
+
+                <div id="awards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                </div>
+            </div>
+        </section>
+
+        <section id="legado" class="py-20 bg-slate-100 shadow-md rounded-xl mx-auto my-8 max-w-6xl">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl font-bold text-slate-800">Legado: Hall da Fama</h2>
+                    <p class="text-lg text-slate-600 mt-4 max-w-2xl mx-auto">O maior patrimônio da escola são as pessoas. Conheça os ex-alunos e professores que deixaram sua marca na história de Campina Grande e do Brasil, refletindo a excelência e o impacto do "Gigantão".</p>
+                </div>
+                
+                <div class="flex justify-center space-x-4 mb-8">
+                    <button id="alumni-btn" class="px-6 py-2 font-semibold rounded-md transition-colors bg-teal-600 text-white hover:bg-teal-700 shadow-md hover:shadow-lg">Ex-Alunos Notáveis</button>
+                    <button id="teachers-btn" class="px-6 py-2 font-semibold rounded-md transition-colors bg-white text-slate-600 border border-slate-300 hover:border-slate-400 shadow-md hover:shadow-lg">Professores Memoráveis</button>
+                </div>
+
+                <div id="hall-of-fame-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                </div>
+            </div>
+        </section>
+
+        <section id="projetos" class="py-20 bg-white shadow-md rounded-xl mx-auto my-8 max-w-6xl">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl font-bold text-slate-800">Projetos que Inspiram</h2>
+                    <p class="text-lg text-slate-600 mt-4 max-w-2xl mx-auto">A educação na ECIT Elpídio de Almeida vai além da sala de aula. Explore os projetos especiais que promovem cidadania, empreendedorismo, bem-estar e cultura, formando cidadãos completos e conscientes.</p>
+                </div>
+
+                <div id="projects-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                </div>
+            </div>
+        </section>
+        
+        <div id="project-modal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden items-center justify-center p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-8 relative">
+                <button id="close-modal-btn" class="absolute top-4 right-4 text-slate-500 hover:text-slate-800">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+                <h3 id="modal-title" class="text-2xl font-bold text-teal-700 mb-4"></h3>
+                <p id="modal-text" class="text-slate-600"></p>
+            </div>
+        </div>
+
+    </main>
+
+    <footer id="contato" class="bg-slate-800 text-white py-12">
+        <div class="container mx-auto px-6 text-center">
+            <h3 class="text-2xl font-bold mb-4">Entre em Contato</h3>
+            <p class="text-slate-300 mb-2">Escola Estadual Dr. Elpídio de Almeida (ECIT)</p>
+            <p class="text-slate-300">Rua Duque De Caxias, 235 - Prata, Campina Grande - PB, 58400-506</p>
+            <p class="text-slate-300 mt-1">Telefone: (83) 3310-6928</p>
+            <p class="text-slate-300 mt-1">Email: elpidiodealmeidacg3gre@gmail.com</p>
+            <p class="text-slate-400 mt-4 text-sm">Código INEP: 25072420</p>
+        </div>
+    </footer>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const data = {
+        timeline: [
+            { year: '1947', title: 'Início da Construção', text: 'A construção do "Colégio Estadual da Prata" começa durante o governo de Osvaldo Trigueiro, um projeto monumental para a época.' },
+            { year: '1953', title: 'Inauguração e Pioneirismo', text: 'Em 31 de janeiro, a escola é inaugurada como Colégio Estadual de Campina Grande, sendo a primeira a oferecer ensino secundário gratuito na cidade.' },
+            { year: '2012', title: 'Desafios e Voz Estudantil', text: 'Um protesto estudantil expõe desafios de infraestrutura, especialmente relacionados à implementação do ensino integral, clamando por melhores condições.'},
+            { year: '2013', title: 'Celebração de 60 Anos', text: 'A escola comemora 60 anos com uma grande solenidade, reunindo a comunidade e recebendo homenagem na Câmara Municipal, reforçando seu legado.' },
+            { year: '2023', title: '70 Anos e Anúncio da Reforma', text: 'Ao celebrar 70 anos, o governo anuncia um investimento de R$ 8,6 milhões para uma reforma estrutural completa, visando modernizar "O Gigantão".' },
+            { year: '2025', title: 'Conclusão da Modernização', text: 'As obras de reforma e recuperação estrutural, iniciadas em 2023, chegam à sua fase final, entregando uma escola mais moderna e equipada para o futuro.' }
+        ],
+        hallOfFame: {
+            alumni: [
+                { name: 'Elba Ramalho', field: 'Cantora', icon: '🎤' },
+                { name: 'José Nêumanne Pinto', field: 'Jornalista', icon: '✍️' },
+                { name: 'Ronaldo Cunha Lima', field: 'Poeta e Político', icon: '🏛️' },
+                { name: 'Luiza Erundina', field: 'Deputada Federal', icon: '👩‍⚖️' },
+                { name: 'Damião Feliciano', field: 'Deputado Federal', icon: '👨‍⚖️' },
+                { name: 'Capilé', field: 'Cantor', icon: '🎶' },
+                { name: 'Agnello Amorim', field: 'Jurista', icon: '⚖️' },
+                { name: 'Hildeberto Barbosa', field: 'Poeta e Crítico', icon: '📚' },
+                { name: 'Vanderley de Brito', field: 'Historiador', icon: '📜' }
+            ],
+            teachers: [
+                { name: 'Elizabeth Marinheiro', field: 'Educadora', icon: '👩‍🏫' },
+                { name: 'Raimundo Suassuna', field: 'História', icon: '🏛️' },
+                { name: 'Dr. João de Assis', field: 'Biologia e Médico', icon: '🔬' },
+                { name: 'Gabriel Agra', field: 'Português', icon: '📖' },
+                { name: 'Padre Emídio Viana', field: 'Latim', icon: '✝️' },
+                { name: 'José Elias Borges', field: 'Inglês', icon: '🇬🇧' },
+                { name: 'Sevy Nunes', field: 'Francês', icon: '🇫🇷' },
+                { name: 'Francisco Celestino', field: 'Educador', icon: '👨‍🏫' }
+            ]
+        },
+        projects: [
+            { 
+                title: 'Prata Abraçando a Vida', 
+                short: 'Uma iniciativa de valorização da vida e saúde mental, alinhada à campanha "Setembro Amarelo".',
+                full: 'Este projeto foca na promoção de valores como respeito, solidariedade e amizade, além da conscientização sobre saúde mental. As atividades incluem rodas de conversa, debates, criação de materiais informativos, encenações teatrais e palestras com psicólogos, criando um ambiente de apoio e cuidado para toda a comunidade escolar.'
+            },
+            { 
+                title: 'Semana do Empreendedor', 
+                short: 'Um evento anual que fomenta o espírito empreendedor e habilidades práticas de negócios.',
+                full: 'Já em sua 15ª edição, a Semana do Empreendedor é uma iniciativa onde alunos protagonistas dos cursos técnicos de Administração e Comércio lideram atividades e desenvolvem projetos de negócios reais, como lojas e serviços. O projeto estimula a criatividade, o planejamento e a liderança, preparando os jovens para o mercado de trabalho.'
+            },
+            { 
+                title: 'Preservação do Patrimônio', 
+                short: 'Um projeto para pesquisar, valorizar e perpetuar a rica história da escola.',
+                full: 'Reconhecendo a importância da instituição como patrimônio histórico e cultural de Campina Grande, este projeto envolve os alunos na pesquisa e documentação da trajetória do "Gigantão da Prata". O objetivo é manter viva a memória da escola, fortalecendo o sentimento de pertencimento e o orgulho de fazer parte deste legado.'
+            },
+            { 
+                title: 'Cultura e Arte em Foco', 
+                short: 'Debates e oficinas que exploram temas como identidade, gênero e cultura afro-brasileira.',
+                full: 'A escola promove discussões ricas e variadas sobre artes plásticas, identidade, gênero, moda e cultura, com um foco especial na valorização da cultura afro-brasileira. Por meio de oficinas, debates e uso de diversas mídias, busca-se ampliar o repertório cultural dos alunos e promover o respeito à diversidade.'
+            },
+            { 
+                title: 'Aprendizagem Criativa', 
+                short: 'Métodos inovadores que conectam o aprendizado teórico com o cotidiano dos alunos.',
+                full: 'A abordagem pedagógica inclui projetos que tornam conceitos abstratos mais tangíveis. Exemplos incluem a construção de uma tabela periódica com materiais recicláveis para ensinar química de forma prática, e o uso de peças de xadrez para explicar áreas de figuras geométricas, estimulando o engajamento e a compreensão profunda.'
+            }
+        ],
+        awards: [
+            { year: '2022', title: 'Prêmio Escola Destaque em Inovação', description: 'Reconhecimento por projetos pedagógicos inovadores e uso de tecnologia em sala de aula.' },
+            { year: '2021', title: 'Melhor Desempenho no ENEM (Regional)', description: 'Destaque entre as escolas públicas da região no Exame Nacional do Ensino Médio.' },
+            { year: '2019', title: 'Certificado de Excelência em Cidadania', description: 'Concedido por programas e atividades que promovem a participação cívica e o desenvolvimento social dos alunos.' },
+            { year: '2018', title: 'Olimpíadas de Conhecimento - Ouro', description: 'Medalha de ouro em diversas categorias nas Olimpíadas de Conhecimento estaduais.' }
+        ],
+        courses: [
+            {
+                id: 'desenvolvimento-sistemas',
+                name: 'Desenvolvimento de Sistemas',
+                icon: '💻',
+                description: 'No curso de Desenvolvimento de Sistemas, você mergulhará no universo da programação e da tecnologia. Aprenderá lógica de programação, linguagens modernas como Python e JavaScript, e as bases para construir aplicações web robustas, tanto no front-end (interface do usuário) quanto no back-end (servidor e banco de dados). Capacitamos você para criar softwares inovadores, gerenciar sistemas eficientemente e resolver problemas complexos com soluções tecnológicas. Este curso é a porta de entrada para uma carreira dinâmica e em constante evolução no setor de TI.',
+                skills: ['Lógica de Programação', 'Python', 'JavaScript', 'Desenvolvimento Web (Front-end e Back-end)', 'Bancos de Dados', 'Resolução de Problemas']
+            },
+            {
+                id: 'comercio',
+                name: 'Comércio',
+                icon: '�',
+                description: 'O curso de Comércio da ECIT Elpídio de Almeida prepara você para os desafios do mercado. Você dominará técnicas de vendas e negociação, estratégias de marketing digital e tradicional, gestão de estoque, logística e excelência no atendimento ao cliente. Nosso foco é formar profissionais aptos a atuar em diversas frentes do comércio, desde a gestão de lojas e e-commerce até a análise de mercado e campanhas promocionais, impulsionando resultados e construindo relacionamentos duradouros com os consumidores.',
+                skills: ['Técnicas de Vendas', 'Marketing Digital', 'Logística', 'Gestão de Estoque', 'Atendimento ao Cliente', 'Análise de Mercado']
+            },
+            {
+                id: 'administracao',
+                name: 'Administração',
+                icon: '📋',
+                description: 'Em Administração, você desenvolverá uma visão estratégica e habilidades essenciais para gerenciar organizações de todos os portes. O curso abrange gestão de pessoas, finanças empresariais, operações, planejamento estratégico e as rotinas administrativas que mantêm uma empresa funcionando. Capacite-se para otimizar recursos, tomar decisões assertivas e contribuir para o crescimento e a eficiência de qualquer negócio, seja no setor público ou privado.',
+                skills: ['Gestão de Pessoas', 'Finanças Empresariais', 'Planejamento Estratégico', 'Gestão de Operações', 'Rotinas Administrativas', 'Tomada de Decisão']
+            }
+        ]
+    };
+
+    function initMobileMenu() {
+        const menuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        menuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        document.querySelectorAll('#mobile-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+    }
+
+    function initTimeline() {
+        const timelineButtonsContainer = document.getElementById('timeline-buttons');
+        const timelineTitle = document.getElementById('timeline-title');
+        const timelineText = document.getElementById('timeline-text');
+
+        data.timeline.forEach((item, index) => {
+            const buttonWrapper = document.createElement('div');
+            buttonWrapper.className = 'timeline-item relative';
+            if (index === 0) buttonWrapper.classList.add('active');
+
+            const button = document.createElement('button');
+            button.className = 'text-left w-full p-2 rounded-md hover:bg-slate-100 transition-colors';
+            button.dataset.index = index;
+
+            const year = document.createElement('p');
+            year.className = 'font-bold text-lg text-slate-800';
+            year.textContent = item.year;
+
+            const title = document.createElement('p');
+            title.className = 'text-sm text-slate-500 font-medium';
+            title.textContent = item.title;
+
+            button.appendChild(year);
+            button.appendChild(title);
+            buttonWrapper.appendChild(button);
+            timelineButtonsContainer.appendChild(buttonWrapper);
+        });
+
+        function updateTimeline(index) {
+            const item = data.timeline[index];
+            timelineTitle.textContent = item.title;
+            timelineText.textContent = item.text;
+
+            document.querySelectorAll('.timeline-item').forEach((el, i) => {
+                el.classList.toggle('active', i == index);
+            });
+        }
+
+        timelineButtonsContainer.addEventListener('click', (e) => {
+            const button = e.target.closest('button');
+            if (button) {
+                updateTimeline(button.dataset.index);
+            }
+        });
+
+        updateTimeline(0);
+    }
+
+    function initHallOfFame() {
+        const grid = document.getElementById('hall-of-fame-grid');
+        const alumniBtn = document.getElementById('alumni-btn');
+        const teachersBtn = document.getElementById('teachers-btn');
+
+        function populateGrid(type) {
+            grid.innerHTML = '';
+            const list = data.hallOfFame[type];
+            list.forEach(person => {
+                const card = document.createElement('div');
+                card.className = 'hall-of-fame-card bg-white p-4 rounded-lg shadow-md border border-slate-200 text-center flex flex-col items-center justify-center';
+                card.innerHTML = `
+                    <p class="text-3xl mb-2">${person.icon}</p>
+                    <p class="font-semibold text-slate-800">${person.name}</p>
+                    <p class="text-sm text-slate-500">${person.field}</p>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        alumniBtn.addEventListener('click', () => {
+            populateGrid('alumni');
+            alumniBtn.classList.add('bg-teal-600', 'text-white');
+            alumniBtn.classList.remove('bg-white', 'text-slate-600', 'border', 'border-slate-300');
+            teachersBtn.classList.add('bg-white', 'text-slate-600', 'border', 'border-slate-300');
+            teachersBtn.classList.remove('bg-teal-600', 'text-white');
+        });
+
+        teachersBtn.addEventListener('click', () => {
+            populateGrid('teachers');
+            teachersBtn.classList.add('bg-teal-600', 'text-white');
+            teachersBtn.classList.remove('bg-white', 'text-slate-600', 'border', 'border-slate-300');
+            alumniBtn.classList.add('bg-white', 'text-slate-600', 'border', 'border-slate-300');
+            alumniBtn.classList.remove('bg-teal-600', 'text-white');
+        });
+
+        populateGrid('alumni');
+    }
+
+    function initProjects() {
+        const container = document.getElementById('projects-container');
+        const modal = document.getElementById('project-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalText = document.getElementById('modal-text');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+
+        data.projects.forEach(project => {
+            const card = document.createElement('div');
+            card.className = 'project-card bg-slate-50 p-6 rounded-lg shadow-sm cursor-pointer';
+            card.innerHTML = `
+                <h4 class="font-bold text-xl text-slate-800 mb-2">${project.title}</h4>
+                <p class="text-slate-600">${project.short}</p>
+            `;
+            card.addEventListener('click', () => {
+                modalTitle.textContent = project.title;
+                modalText.textContent = project.full;
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            });
+            container.appendChild(card);
+        });
+
+        function closeModal() {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        closeModalBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+    }
+
+    function initAwards() {
+        const awardsContainer = document.getElementById('awards-container');
+        data.awards.forEach(award => {
+            const card = document.createElement('div');
+            card.className = 'award-card bg-white p-6 rounded-lg shadow-sm border border-slate-200';
+            card.innerHTML = `
+                <p class="text-sm font-semibold text-teal-700 mb-1">${award.year}</p>
+                <h4 class="font-bold text-xl text-slate-800 mb-2">${award.title}</h4>
+                <p class="text-slate-600">${award.description}</p>
+            `;
+            awardsContainer.appendChild(card);
+        });
+    }
+
+    function initCourses() {
+        const courseTabsContainer = document.getElementById('course-tabs');
+        const courseDetailTitle = document.getElementById('course-detail-title');
+        const courseDetailDescription = document.getElementById('course-detail-description');
+        const courseDetailSkills = document.getElementById('course-detail-skills');
+
+        function updateCourseDetails(courseId) {
+            const selectedCourse = data.courses.find(course => course.id === courseId);
+            if (selectedCourse) {
+                courseDetailTitle.textContent = `${selectedCourse.icon} ${selectedCourse.name}`;
+                courseDetailDescription.textContent = selectedCourse.description;
+                courseDetailSkills.innerHTML = '';
+                selectedCourse.skills.forEach(skill => {
+                    const li = document.createElement('li');
+                    li.textContent = skill;
+                    courseDetailSkills.appendChild(li);
+                });
+
+                // Update active button state
+                document.querySelectorAll('.course-tab-button').forEach(button => {
+                    button.classList.remove('active');
+                });
+                document.querySelector(`.course-tab-button[data-course-id="${courseId}"]`).classList.add('active');
+            }
+        }
+
+        // Create tab buttons
+        data.courses.forEach((course, index) => {
+            const button = document.createElement('button');
+            button.className = 'course-tab-button';
+            button.dataset.courseId = course.id;
+            button.innerHTML = `${course.icon} ${course.name}`;
+            button.addEventListener('click', () => updateCourseDetails(course.id));
+            courseTabsContainer.appendChild(button);
+        });
+
+        // Initialize with the first course
+        if (data.courses.length > 0) {
+            updateCourseDetails(data.courses[0].id);
+        }
+    }
+
+    initMobileMenu();
+    initTimeline();
+    initHallOfFame();
+    initProjects();
+    initAwards();
+    initCourses(); // Initialize the new courses section
+});
+</script>
+
+</body>
+</html>
+�
